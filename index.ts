@@ -5,8 +5,9 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import definePlugin, { OptionType } from "@utils/types";
+import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { FluxDispatcher, Toasts, UserSettingsActionCreators } from "@webpack/common";
+const { setSafeInterval } = VencordNative.pluginHelpers.StatusCountdown as PluginNative<typeof import("./native")>;
 
 const settings = definePluginSettings({
     date: {
@@ -38,7 +39,7 @@ export default definePlugin({
 
     start() {
         updateStatus();
-        setInterval(updateStatus, 1000 * 60 * 60);
+        setSafeInterval(updateStatus, 1000 * 60 * 15);
     },
 });
 
