@@ -9,7 +9,13 @@ import { getUserSettingLazy } from "@api/UserSettings";
 import definePlugin, { OptionType } from "@utils/types";
 import { Toasts } from "@webpack/common";
 
-const CustomStatus = getUserSettingLazy<boolean>("status", "customStatus")!;
+const CustomStatus = getUserSettingLazy<Partial<{
+    text: string
+    emojiId: string
+    emojiName: string
+    expiresAtMs: string
+    createdAtMs: string
+}>>("status", "customStatus")!;
 
 const settings = definePluginSettings({
     date: {
@@ -70,13 +76,12 @@ export function updateStatus() {
     const newStatus = getStatusString();
     if (!newStatus) return;
 
-    // weird type gymnastics because the getUserSettingLazy helper assumes settings are only ever booleans
-    const currentStatus: string = CustomStatus.getSetting() as any;
+    const currentStatus = CustomStatus.getSetting().text;
     if (currentStatus === newStatus) return;
 
     CustomStatus.updateSetting({
         text: newStatus,
         createdAtMs: new Date().getTime().toString(), // ensures update isn't invalidated for being "out of date"
         expiresAtMs: "0", // ensures status doesnt randomly clear itself
-    } as unknown as boolean);
+    });
 }
