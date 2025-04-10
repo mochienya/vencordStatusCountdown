@@ -76,7 +76,7 @@ export function updateStatus() {
 
     CustomStatus.updateSetting({
         text: newStatus,
-        createdAtMs: new Date().getTime(), // ensures update isn't invalidated for being "out of date"
-        expiresAtMs: 0, // ensures status doesnt randomly clear itself
+        createdAtMs: new Date().getTime().toString(), // ensures update isn't invalidated for being "out of date"
+        expiresAtMs: "0", // ensures status doesnt randomly clear itself
     } as unknown as boolean);
 }
