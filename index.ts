@@ -5,9 +5,11 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import definePlugin, { OptionType, PluginNative } from "@utils/types";
-import { FluxDispatcher, Toasts, UserSettingsActionCreators } from "@webpack/common";
-const { setSafeInterval } = VencordNative.pluginHelpers.StatusCountdown as PluginNative<typeof import("./native")>;
+import { getUserSettingLazy } from "@api/UserSettings";
+import definePlugin, { OptionType } from "@utils/types";
+import { Toasts } from "@webpack/common";
+
+const CustomStatus = getUserSettingLazy<boolean>("status", "customStatus")!;
 
 const settings = definePluginSettings({
     date: {
@@ -35,11 +37,12 @@ export default definePlugin({
     name: "StatusCountdown",
     description: "Automated days countdown in your status.",
     authors: [{ name: "mochie", id: 1043599230247374869n }, { name: "cassie", id: 280411966126948353n }],
+    dependencies: ["UserSettingsAPI"],
     settings,
 
     start() {
         updateStatus();
-        setSafeInterval(updateStatus, 1000 * 60 * 15);
+        setInterval(updateStatus, 1000 * 60 * 15);
     },
 });
 
@@ -63,24 +66,21 @@ function getStatusString(): string | undefined {
     return settings.store.text.replace("%d", dayDiff.toString());
 }
 
-function updateStatus() {
+export function updateStatus() {
     const newStatus = getStatusString();
     if (!newStatus) return;
 
-    const currentStatus = UserSettingsActionCreators.PreloadedUserSettingsActionCreators.getCurrentValue()?.status?.customStatus?.text;
+    // weird type gymnastics because the getUserSettingLazy helper assumes settings are only ever booleans
+    const currentStatus: string = CustomStatus.getSetting() as any;
     if (currentStatus === newStatus) return;
 
-    const proto = UserSettingsActionCreators.PreloadedUserSettingsActionCreators.ProtoClass.create();
-    proto.status = {
-        customStatus: { text: newStatus }
-    };
-
-    FluxDispatcher.dispatch({
-        type: "USER_SETTINGS_PROTO_UPDATE",
-        partial: true,
-        settings: {
-            type: 1,
-            proto
-        }
-    });
+    CustomStatus.updateSetting({
+        text: newStatus,
+        createdAtMs: new Date().getTime(),
+        // ensure status doesnt randomly clear itself
+        expiresAtMs: "0",
+        // clear emoji from status if there was one
+        emojiId: "0",
+        emojiName: "",
+    } as unknown as boolean);
 }
