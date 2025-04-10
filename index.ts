@@ -76,11 +76,7 @@ export function updateStatus() {
 
     CustomStatus.updateSetting({
         text: newStatus,
-        createdAtMs: new Date().getTime(),
-        // ensure status doesnt randomly clear itself
-        expiresAtMs: "0",
-        // clear emoji from status if there was one
-        emojiId: "0",
-        emojiName: "",
+        createdAtMs: new Date().getTime(), // ensures update isn't invalidated for being "out of date"
+        expiresAtMs: 0, // ensures status doesnt randomly clear itself
     } as unknown as boolean);
 }
