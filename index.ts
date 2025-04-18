@@ -76,12 +76,14 @@ export function updateStatus() {
     const newStatus = getStatusString();
     if (!newStatus) return;
 
-    const currentStatus = CustomStatus.getSetting().text;
+    const currentStatus = CustomStatus.getSetting()?.text;
     if (currentStatus === newStatus) return;
 
     CustomStatus.updateSetting({
         text: newStatus,
         createdAtMs: new Date().getTime().toString(), // ensures update isn't invalidated for being "out of date"
         expiresAtMs: "0", // ensures status doesnt randomly clear itself
+        emojiId: "0",
+        emojiName: "", // clear emoji from status if there was one (ALSO DON'T REMOVE THIS IT BREAKS WITHOUT IT)
     });
 }
